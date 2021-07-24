@@ -3,44 +3,138 @@
 #include <iostream>
 #include <cassert>
 #include <random>
+#include <cstring>
+
+namespace mine{
+
+template<class T>
+class vector{
+
+    private:
+    T* m_vect = nullptr;
+    int m_size = 0;
+    public:
+    vector(int* a, int n)
+    {
+        m_vect = a;
+        m_size = n;
+        a = nullptr;
+    }
+
+    vector(const vector<T>& v)
+    {
+        if ( v.m_size > m_size )
+            m_vect = new T[v.m_size];
+        m_size = v.m_size;
+
+        for ( int i = 0; i < m_size; i++ )
+            m_vect[i] = v.m_vect[i];
+    }
+
+    vector(vector<T>&& v)
+    {
+        m_size = v.m_size;
+        m_vect = v.m_vect;
+        v.m_vect = 0;
+    }
+
+    vector(std::vector<T> v)
+    {
+        if ( v.size() > m_size )
+            m_vect = new T[v.size()];
+
+        m_size = v.size();
+        for ( int i = 0; i < v.size(); i++ )
+            m_vect[i] = v[i];
+    }
+
+    vector(int n, T val)
+    {
+        m_vect = new T[n];
+        m_size = n;
+        for ( int i = 0; i < m_size; i++ )
+            m_vect[i] = val;
+    }
+
+    int size()const
+    {
+        return m_size;
+    }
+
+    void operator=(const vector<T>& v)
+    {
+        if ( v.m_size > m_size )
+            m_vect = new T[v.m_size];
+        m_size = v.m_size;
+
+        for ( int i = 0; i < m_size; i++ )
+            m_vect[i] = v.m_vect[i];
+    }
+
+    void operator=(vector<T>&& v)
+    {
+        m_size = v.m_size;
+        m_vect = v.m_vect;
+        v.m_vect = 0;
+    }
+
+    T& operator[](int index)
+    {
+        assert(index >= 0 && index < m_size);
+        return m_vect[index];
+    }
+
+    const T operator[](int index) const
+    {
+        assert(index >= 0 && index < m_size);
+        return m_vect[index];
+    }
+
+    ~vector()
+    {
+        delete m_vect;
+    }
+};
+
+};
+
 
 template<class T>
 class Matrix
 {
     protected:
-    std::vector<std::vector<T>> m_Mat;
-    std::random_device rd;
+    std::vector<mine::vector<T>> m_Mat;
     public:
+    std::random_device rd;
     std::mt19937 gen;
     std::uniform_real_distribution<double> dis;
+
     public:
-    void initRandGen(){
-        // rd = std::random_device();
-        gen = std::mt19937(rd()); dis = std::uniform_real_distribution<double>(0.0, 1.0);
-    }
+    void initRandGen(){ gen = std::mt19937(rd()); dis = std::uniform_real_distribution<double>(0.0, 1.0); }
     Matrix(){ initRandGen(); };
     Matrix(const Matrix& x)
     {
-        m_Mat.resize(x.rows(), vector<T>(x.cols(), 0));
+        m_Mat.resize(x.rows(), mine::vector<T>(x.cols(), 0));
         for ( int i = 0; i < x.rows(); i++ )
             for ( int j = 0; j < x.cols(); j++ )
                 m_Mat[i][j] = x[i][j];
     }
-    Matrix(const std::vector<std::vector<T>>& init): m_Mat(init){ initRandGen(); };
-    Matrix(int rows, int cols){ m_Mat = std::vector<std::vector<T>>(rows, std::vector<T>(cols, 0)); initRandGen(); }
+
+    Matrix(const std::vector<mine::vector<T>>& init): m_Mat(init){ initRandGen(); };
+    Matrix(int rows, int cols){ m_Mat = std::vector<mine::vector<T>>(rows, mine::vector<T>(cols, 0)); initRandGen(); }
 
     Matrix(Matrix&& x)
     {
         swap(m_Mat, x.m_Mat);
     }
 
-    const std::vector<T>& operator[](int index) const
+    const mine::vector<T>& operator[](int index) const
     {
         assert(index >= 0 && index < m_Mat.size());
         return m_Mat[index];
     }
 
-    std::vector<T>& operator[](int index)
+    mine::vector<T>& operator[](int index)
     {
         assert(index >= 0 && index < m_Mat.size());
         return m_Mat[index];
@@ -56,12 +150,12 @@ class Matrix
         if ( m_Mat.size() == 0 )
             return 0;
 
-        return( int )m_Mat[0].size();
+        return m_Mat[0].size();
     }
 
     void operator=(const Matrix<T>& x)
     {
-        m_Mat.resize(x.rows(), vector<T>(x.cols(), 0));
+        m_Mat.resize(x.rows(), mine::vector<T>(x.cols(), 0));
         for ( int i = 0; i < x.rows(); i++ )
             for ( int j = 0; j < x.cols(); j++ )
                 m_Mat[i][j] = x[i][j];
@@ -190,7 +284,7 @@ class Matrix
 
     void setDim(int rows, int cols)
     {
-        m_Mat.resize(rows, vector<T>(cols, 0));
+        m_Mat.resize(rows, mine::vector<T>(cols, 0));
     }
 
     Matrix transpose()
@@ -221,7 +315,6 @@ void fillvectMat(std::vector<Matrix<T>>& v)
     for ( auto& mat : v )
         mat.fill(0);
 }
-
 
 template<typename T>
 Matrix<T> operator*(double nr, const Matrix<T>& matrix)
@@ -279,7 +372,7 @@ class ColumnVector: public Matrix<T>
         setDim(( int )a.size());
 
         for ( int i = 0; i < ( int )a.size(); i++ )
-            m_Mat[i][0] = a[i];
+            this->m_Mat[i][0] = a[i];
     }
     ColumnVector(const Matrix<T>& a)
     {
@@ -287,46 +380,46 @@ class ColumnVector: public Matrix<T>
         setDim(( int )a.rows());
 
         for ( int i = 0; i < a.rows(); i++ )
-            m_Mat[i][0] = a[i][0];
+            this->m_Mat[i][0] = a[i][0];
     }
     ColumnVector(int Dim)
     {
-        fill(0);
+        this->fill(0);
         setDim(Dim);
     }
     ColumnVector(int Dim, int val)
     {
         setDim(Dim);
-        fill(val);
+        this->fill(val);
     }
 
-    const T& operator[](int index) const
+    const T operator[](int index) const
     {
-        assert(index >= 0 && index < rows() && cols() == 1);
-        return m_Mat[index][0];
+        assert(index >= 0 && index < this->rows() && this->cols() == 1);
+        return this->m_Mat[index][0];
     }
 
     T& operator[](int index)
     {
-        assert(index >= 0 && index < m_Mat.size());
-        return m_Mat[index][0];
+        assert(index >= 0 && index < this->m_Mat.size());
+        return this->m_Mat[index][0];
     }
 
     void operator=(const ColumnVector<T>& x)
     {
-        m_Mat.resize(x.rows(), vector<T>(x.cols(), 0));
+        this->m_Mat.resize(x.rows(), mine::vector<T>(x.cols(), 0));
         for ( int i = 0; i < ( int )x.size(); i++ )
             (*this)[i] = x[i];
     }
 
     int size() const
     {
-        return ( int )rows();
+        return ( int )this->rows();
     }
 
     void setDim(int rows)
     {
-        m_Mat.resize(rows, vector<T>(1, 0));
+        this->m_Mat.resize(rows, mine::vector<T>(1, 0));
     }
 };
 

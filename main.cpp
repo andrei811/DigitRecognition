@@ -128,7 +128,7 @@ vector<pair<ColumnVector<double>, int>> LoadTestData()
     k = 8; // skip the known information
 
     for ( int i = 0; i < nrImg; i++ )
-        ans[i].second = readInt8();
+        ans[i].second = buffer[k++];
 
     fclose(fin);
     return ans;
