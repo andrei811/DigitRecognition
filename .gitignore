@@ -2,3 +2,5 @@
 *.exe
 build
 test.cpp
+out
+.vs
