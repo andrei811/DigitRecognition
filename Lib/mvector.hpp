@@ -19,7 +19,6 @@ namespace mine {
 	public:
 		T* m_vect = nullptr;
 		int m_size = 0;
-	public:
 
 		vector() :m_vect(nullptr), m_size(0) {}
 

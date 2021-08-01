@@ -385,6 +385,16 @@ public:
 		mine::swapVector<T>(m_vect, x.m_vect);
 	}
 
+	bool operator==(const Vector<T>& x)
+	{
+		assert(size() == x.size());
+
+		for (int i = 0; i < size(); i++)
+			if (m_vect[i] != x.m_vect[i])
+				return 0;
+		return 1;
+	}
+
 	Vector operator+(const Vector<T>& v)
 	{
 		assert(v.size() == size());
@@ -707,7 +717,7 @@ Vector<double> randVect(int size)
 	std::mt19937 gen;
 	std::uniform_real_distribution<double> dis;
 	gen = std::mt19937(rd());
-	dis = std::uniform_real_distribution<double>(-10.0, 10.0);
+	dis = std::uniform_real_distribution<double>(-1.0, 1.0);
 
 	Vector<double> mat(size);
 
@@ -768,7 +778,7 @@ Matrix<double> randMat(int rows, int cols)
 	std::mt19937 gen;
 	std::uniform_real_distribution<double> dis;
 	gen = std::mt19937(rd());
-	dis = std::uniform_real_distribution<double>(-10.0, 10.0);
+	dis = std::uniform_real_distribution<double>(-1.0, 1.0);
 
 	Matrix<double> mat(rows, cols);
 

@@ -27,7 +27,10 @@ public:
 			m_W[i - 1] = ((Matrix<double>&&) randMat(m_Shapes[i], m_Shapes[i - 1]));
 		
 		for (int i = 1; i < m_Shapes.size(); i++)
+		{
 			m_B[i - 1] = (Vector<double>&&) randVect(m_Shapes[i]);
+			//cout << m_B[i - 1] << "\n\n";
+		}
 	}
 
 	NeuralNetwork(mine::vector<int>&& Shapes, double learning_rate = 0.15, int BatchSize = 32, int epochlen = 10, int Batches = 100) :
@@ -47,7 +50,10 @@ public:
 		assert(input.size() == m_Shapes[0]);
 
 		for (int i = 1; i < m_Shapes.size(); i++)
-			input = (ColumnVector<double>&&)sigmoid(m_B[i - 1] + (ColumnVector<double>&&)(m_W[i - 1] * input));
+		{
+			input = (ColumnVector<double>&&)(m_B[i - 1] + (ColumnVector<double>&&)(m_W[i - 1] * input));
+			sigmoid(input);
+		}
 
 		return input;
 	}
@@ -62,23 +68,24 @@ public:
 
 		for (int i = 1; i < m_Shapes.size(); i++)
 		{
-			input = (ColumnVector<double>&&)(m_B[i - 1] + (ColumnVector<double>&&)(m_W[i - 1] * input));
+			input = (ColumnVector<double>&&)(m_B[i - 1] + (ColumnVector<double>&&)(m_W[i - 1] * yAct[i-1]));
 			xAct[i - 1] = input;
 			sigmoid(input);
-			yAct[i] = input;
+			yAct[i] = (ColumnVector<double>&&)input;
 		}
 
 		int posY = yAct.size()-1, posX = xAct.size()-1;
-		ColumnVector<double> delta = yAct[posY] - expectedOutput;
+		ColumnVector<double> delta = (ColumnVector<double>&&)(Vector<double>(expectedOutput) - yAct[posY]);
 
 		for (int i = (int)nablaW.size() - 1; i >= 0; i--)
 		{
 			posY--;
 			delta = (ColumnVector<double>&&) hadamaradProduct<double>(delta, sigmoid_prime(xAct[posX])); // derivative with respect to x 
+			
 			nablaW[i] += (Matrix<double>&&)(delta * RowVector<double>(yAct[posY]));
 			nablaB[i] += delta;
 
-			delta = (Vector<double>&&)((RowVector<double>(xAct[posX]) * m_W[i]));
+			delta = (Vector<double>&&)((RowVector<double>(delta) * m_W[i]));
 			posX--;
 		}
 	}
@@ -119,6 +126,9 @@ public:
 				for (int j = i; j < lim; j++)
 					backprop(trainData[j].first, OneDim<double>((int)m_Shapes.back(), (int)trainData[j].second),
 						nablaW, nablaB, xAct, yAct);
+
+				/*for (int i = 0; i < m_Shapes.size() - 1; i++)
+					std::cout << nablaW[i] << "\n\n";*/
 
 				m_W -= m_eta * nablaW;
 				m_B -= m_eta * nablaB;

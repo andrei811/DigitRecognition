@@ -14,22 +14,28 @@ mine::vector<pair<ColumnVector<double>, int>> LoadTestData();
 
 int main()
 {
-	ColumnVector<double> v({ 3, 1, 2 }), b({4, 2, 3});
-
-	std::cout << v + (ColumnVector<double>&&)b << "\n";
-	return 0;
-	NeuralNetwork model((mine::vector<int>&&) mine::vector <int>({784, 64, 32, 10}));
-	mine::vector<std::pair<ColumnVector<double>, int>> trainData = LoadTrainData(), testData = LoadTestData();
-
-	/*mine::vector<std::pair<ColumnVector<double>, int>> a({ {ColumnVector<double>({1, 2, 3, 1, 2}), 1} }), b({});
-
+	/*NeuralNetwork m((mine::vector<int>&&) mine::vector <int>({ 4, 3, 2 }));
+	ColumnVector<double> out = OneDim<double>(2, 1);
 	mine::vector<Matrix<double>> nablaW(2);
 	mine::vector<ColumnVector<double>> nablaB(2);
 
-	for (int i = 0; i < 2; i++)
-		nablaW[i].setDim(model.m_W[i].rows(),model.m_W[i].cols()), nablaB[i].setDim(model.m_B[i].size());
+	nablaW[0].setDim(3, 4);
+	nablaW[1].setDim(2, 3);
+	nablaB[0].setDim(3);
+	nablaB[1].setDim(2);
 
-	model.backprop(ColumnVector<double>({ 1, 2, 3, 1, 2 }), OneDim<double>(2, 1),nablaW, nablaB);*/
+	mine::vector<ColumnVector<double>> xAct, yAct;
+	yAct.resize(3);
+	xAct.resize(2);
+
+	m.backprop(ColumnVector<double>({ 3, 2, 1, 2 }), out, nablaW, nablaB, xAct, yAct);
+
+	return 0;*/
+
+
+	NeuralNetwork model((mine::vector<int>&&) mine::vector <int>({784, 64, 32, 10}));
+
+	mine::vector<std::pair<ColumnVector<double>, int>> trainData = LoadTrainData(), testData = LoadTestData();
 
 	model.SGD(trainData, testData);
 }
